@@ -20,6 +20,7 @@ class User(Base):
     )
 
     chats = relationship("Chat", back_populates="user")
+    memories = relationship("Memory", back_populates="user")
 
 
 class Chat(Base):
@@ -55,3 +56,22 @@ class Message(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     chat = relationship("Chat", back_populates="messages")
+
+
+class Memory(Base):
+    __tablename__ = "memories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    key = Column(String, nullable=False)
+    value = Column(Text, nullable=False)
+    source_message_id = Column(Integer, ForeignKey("messages.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    user = relationship("User", back_populates="memories")

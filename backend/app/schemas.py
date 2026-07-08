@@ -76,3 +76,22 @@ class ChatDetailResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class MemoryCreate(BaseModel):
+    key: str = Field(min_length=1)
+    value: str = Field(min_length=1)
+
+
+class MemoryResponse(BaseModel):
+    id: int
+    key: str
+    value: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class MemoryDeleteResponse(BaseModel):
+    message: str

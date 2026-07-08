@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import FRONTEND_URL
-from app.routers import auth, chats, debug
+from app.routers import auth, chats, debug, memories
 
 app = FastAPI(title="Memory Chat AI")
 
@@ -25,6 +25,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(chats.router)
+app.include_router(memories.router)
 app.include_router(debug.router)
 
 

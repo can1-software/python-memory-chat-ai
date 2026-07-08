@@ -20,8 +20,12 @@ def _get_client() -> genai.Client:
     return genai.Client(api_key=GEMINI_API_KEY)
 
 
-def generate_response(messages: list[dict]) -> str:
+def generate_response(messages: list[dict], memories_text: str = "") -> str:
     """Send recent chat messages to Gemini and return assistant text."""
+    system_instruction = SYSTEM_PROMPT
+    if memories_text:
+        system_instruction = f"{SYSTEM_PROMPT}\n\n{memories_text}"
+
     contents = []
     for message in messages:
         role = "user" if message["role"] == "user" else "model"
@@ -37,7 +41,7 @@ def generate_response(messages: list[dict]) -> str:
         response = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=contents,
-            config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
+            config=types.GenerateContentConfig(system_instruction=system_instruction),
         )
 
         text = response.text

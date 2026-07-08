@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import Chat, Message, User
-from app.services import ai_service
+from app.services import ai_service, memory_service
 
 
 def get_user_chat(db: Session, user: User, chat_id: int) -> Chat:
@@ -77,11 +77,24 @@ def send_message_with_ai(
     db.commit()
     db.refresh(user_message)
 
+    memory_service.save_extracted_memories(
+        db,
+        user,
+        content,
+        source_message_id=user_message.id,
+    )
+
+    memories = memory_service.list_user_memories(db, user)
+    memories_text = memory_service.format_memories_for_prompt(memories)
+
     recent_messages = get_recent_messages(db, chat.id, limit=10)
     history = [{"role": message.role, "content": message.content} for message in recent_messages]
 
     try:
-        assistant_content = ai_service.generate_ai_response(history)
+        assistant_content = ai_service.generate_ai_response(
+            history,
+            memories_text=memories_text,
+        )
     except ai_service.AIServiceError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
