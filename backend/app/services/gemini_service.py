@@ -1,15 +1,13 @@
 from google import genai
 from google.genai import types
 
-from app.config import GEMINI_API_KEY
+from app.config import GEMINI_API_KEY, GEMINI_MODEL
 
 SYSTEM_PROMPT = (
     "You are a helpful AI assistant. Give clear and concise answers. "
     "If the user writes in Turkish, answer in Turkish. "
     "If the user writes in English, you may answer in English."
 )
-
-MODEL_NAME = "gemini-2.0-flash"
 
 
 class GeminiServiceError(Exception):
@@ -37,7 +35,7 @@ def generate_response(messages: list[dict]) -> str:
     try:
         client = _get_client()
         response = client.models.generate_content(
-            model=MODEL_NAME,
+            model=GEMINI_MODEL,
             contents=contents,
             config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT),
         )
@@ -50,5 +48,4 @@ def generate_response(messages: list[dict]) -> str:
     except GeminiServiceError:
         raise
     except Exception as e:
-        print("GEMINI ERROR:", repr(e))
-        raise
+        raise GeminiServiceError("Gemini request failed.") from e

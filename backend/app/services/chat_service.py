@@ -2,7 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import Chat, Message, User
-from app.services import gemini_service
+from app.services import ai_service
 
 
 def get_user_chat(db: Session, user: User, chat_id: int) -> Chat:
@@ -81,13 +81,14 @@ def send_message_with_ai(
     history = [{"role": message.role, "content": message.content} for message in recent_messages]
 
     try:
-        assistant_content = gemini_service.generate_response(history)
-    except gemini_service.GeminiServiceError:
+        assistant_content = ai_service.generate_ai_response(history)
+    except ai_service.AIServiceError:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="AI service is temporarily unavailable. Your message was saved.",
         )
-    except Exception:
+    except Exception as e:
+        print("AI PROVIDER ERROR:", repr(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="AI service is temporarily unavailable. Your message was saved.",
